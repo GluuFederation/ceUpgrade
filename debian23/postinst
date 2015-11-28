@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+/usr/sbin/chroot /opt/gluu-server /bin/su - root -c 'service tomcat stop' > /dev/null 2>&1
+/usr/sbin/chroot /opt/gluu-server /bin/su - root -c '/opt/gluu-server-updater/CHANGEME/bin/update.sh' > /dev/null 2>&1
+/usr/sbin/chroot /opt/gluu-server /bin/su - root -c 'service tomcat start' > /dev/null 2>&1
+
+
+exit 0
