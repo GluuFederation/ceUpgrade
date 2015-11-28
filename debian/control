@@ -1,4 +1,4 @@
-Source: gluu-server-updater24
+Source: gluu-server-updater
 Section: java
 Priority: optional
 Maintainer: Gluu Developers <support@gluu.org>
@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.4
 Homepage: http://www.gluu.org
 
-Package: gluu-server-updater24
+Package: gluu-server-updater
 Architecture: amd64
-Depends: gluu-server
+Depends: CHANGEME
 Description: Gluu Server Community Edition
