@@ -21,37 +21,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import subprocess
-import shutil
+import os, subprocess, shutil, sys
 
-
-def cpfile(src,dst):
+def cpfile(src, dst):
   if os.path.exists(src) and os.path.exists(dst):
-   shutil.copy2(src, dst)
+      shutil.copy2(src, dst)
 
-def serviceinit(startstop,initpath):
+def serviceinit(startstop, initpath):
+    cmd = ["service", initpath, startstop]
     p = subprocess.Popen(["service", initpath, startstop], stdout=subprocess.PIPE)
     output, err = p.communicate()
-    print "Stopping or starting initfile...\n", output
+    if err:
+        print "Error running %s" % " ".join(cmd)
+        print err
+        sys.exit(1)
+    print output
 
 def check_ver():
-  if os.path.exists("/etc/init.d/gluu-server24"):
-    initpath = "/etc/init.d/gluu-server24"
-    dest_dir = "/opt/gluu-server24"
-    return initpath
-    return dest_dir
-  elif os.path.exists("/etc/init.d/gluu-server"): 
-    initpath = "/etc/init.d/gluu-server"
-    dest_dir = "/opt/gluu-server"
-    return initpath
-    return dest_dir
+    initpath = None
+    dest_dir = None
+    if os.path.exists("/etc/init.d/gluu-server24"):
+        initpath = "/etc/init.d/gluu-server24"
+        dest_dir = "/opt/gluu-server24"
+    elif os.path.exists("/etc/init.d/gluu-server"):
+        initpath = "/etc/init.d/gluu-server"
+        dest_dir = "/opt/gluu-server"
+    if (initpath==None) | (dest_dir==None):
+        print "Init file or gluu-server folder not found. Exiting..."
+        sys.exit(2)
+    return initpath, dest_dir
 
 #NEED HELP WITH UPDATER VARIABLE
-check_ver()
-serviceinit("start",initpath)
-cpfile("$UPDATER/idp.war", "dest_dir/opt/idp/war/idp.war")
-cpfile("$UPDATER/oxcas.war", "dest_dir/opt/dist/oxcas.war")
-cpfile("$UPDATER/identity.war", "dest_dir/opt/tomcat/webapps/identity.war")
-cpfile("$UPDATER/oxauth.war', 'dest_dir/opt/tomcat/webapps/oxauth.war")
-serviceinit("stop",initpath)
+initpath, dest_dir = check_ver()
+serviceinit("stop", initpath.split("/")[-1])
+cpfile("%s/idp.war" % initpath, "%s/opt/idp/war/idp.war" % dest_dir)
+cpfile("%s/oxcas.war" % initpath, "%s/opt/dist/oxcas.war" % dest_dir)
+cpfile("%s/identity.war" % initpath, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
+cpfile("%s/oxauth.war" % initpath, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
+serviceinit("start", initpath.split("/")[-1])
