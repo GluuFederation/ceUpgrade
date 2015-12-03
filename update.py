@@ -56,12 +56,8 @@ def check_ver():
 # MAIN LOOP
 dest_dir, service_name = check_ver()
 serviceinit(service_name, "stop")
-cpfile("%s/%s/idp.war" % (package_dir, service_name),
-       "%s/opt/idp/war/idp.war" % dest_dir)
-cpfile("%s/%s/oxcas.war" % (package_dir, service_name),
-       "%s/opt/dist/oxcas.war" % dest_dir)
-cpfile("%s/%s/identity.war" % (package_dir, service_name),
-       "%s/opt/tomcat/webapps/identity.war" % dest_dir)
-cpfile("%s/%s/oxauth.war" % (package_dir, service_name),
-       "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
+cpfile("%s/%s/idp.war" % package_dir, "%s/opt/idp/war/idp.war" % dest_dir)
+cpfile("%s/%s/oxcas.war" % package_dir, "%s/opt/dist/oxcas.war" % dest_dir)
+cpfile("%s/%s/identity.war" % package_dir, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
+cpfile("%s/%s/oxauth.war" % package_dir, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
 serviceinit(service_name, "start")
