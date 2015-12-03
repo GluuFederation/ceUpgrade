@@ -25,18 +25,21 @@ import os
 import subprocess
 import shutil
 
-if os.path.exists(/etc/init.d/gluu-server24): 
-  subprocess.call(["service", "gluu-server24", "stop"])
-  p = subprocess.Popen(["service", "gluu-server24", "stop"], stdout=subprocess.PIPE)
-  output, err = p.communicate()
-  print "Beggining of the upgrade process, Stopping gluu-server...\n", output
-elif os.path.exists(/etc/init.d/gluu-server): 
-  subprocess.call(["service", "gluu-server", "stop"])
-  p = subprocess.Popen(["service", "gluu-server", "stop"], stdout=subprocess.PIPE)
-  output, err = p.communicate()
-  print "Beggining of the upgrade process, Stopping gluu-server...\n", output
 
-print "Upgrading the files..."
+def cpfile(src,dst):
+  if os.path.exists(src) and os.path.exists(dst):
+   shutil.copy2(src, dst)
+
+def serviceinit(startstop):
+  if os.path.exists("/etc/init.d/gluu-server24"): 
+    p = subprocess.Popen(["service", "gluu-server24", startstop], stdout=subprocess.PIPE)
+    output, err = p.communicate()
+    print "Stopping or starting gluu-server...\n", output
+  elif os.path.exists("/etc/init.d/gluu-server"): 
+    p = subprocess.Popen(["service", "gluu-server", startstop], stdout=subprocess.PIPE)
+    output, err = p.communicate()
+    print "Stopping or starting gluu-server...\n", output
+
 
 dest_dir_ls = os.listdir("/opt")
 dest_dir = ""
@@ -45,25 +48,10 @@ for dir in dest_dir_ls:
   if dir.index("gluu")>=0:
     dest_dir = dir
 
-#NOT SURE HOW TO DO THAT UPDATER="/opt/CHANGEME/opt/CHANGEME-updater/$VER/dist"
-if os.path.exists(UPDATER/idp.war) and os.path.exists(DEST_DIR/opt/idp/war):
-  shutil.copy2('$UPDATER/idp.war', 'dest_dir/opt/idp/war/idp.war')
-if os.path.exists(UPDATER/idp.war) and os.path.exists(DEST_DIR/opt/dist):
-  shutil.copy2('$UPDATER/oxcas.war', 'dest_dir/opt/dist/oxcas.war')
-if os.path.exists(UPDATER/identity.war) and os.path.exists(DEST_DIR/opt/tomcat/webapps):
-  shutil.copy2('$UPDATER/identity.war', 'dest_dir/opt/tomcat/webapps/identity.war')
-if os.path.exists(UPDATER/oxauth.war) and os.path.exists(DEST_DIR/opt/tomcat/webapps):
-  shutil.copy2('$UPDATER/oxauth.war', 'dest_dir/opt/tomcat/webapps/oxauth.war')
-
-if os.path.exists(/etc/init.d/gluu-server24): 
-  subprocess.call(["service", "gluu-server24", "start"])
-  p = subprocess.Popen(["service", "gluu-server24", "start"], stdout=subprocess.PIPE)
-  output, err = p.communicate()
-  print "Files updated, Starting gluu-server...\n", output
-elif os.path.exists(/etc/init.d/gluu-server): 
-  subprocess.call(["service", "gluu-server", "start"])
-  p = subprocess.Popen(["service", "gluu-server", "start"], stdout=subprocess.PIPE)
-  output, err = p.communicate()
-  print "Files updated, Starting gluu-server...\n", output
-
-print "Upgrade process ends successfully."
+#NEED HELP WITH UPDATER VARIABLE
+serviceinit("start")
+cpfile("$UPDATER/idp.war", "dest_dir/opt/idp/war/idp.war")
+cpfile("$UPDATER/oxcas.war", "dest_dir/opt/dist/oxcas.war")
+cpfile("$UPDATER/identity.war", "dest_dir/opt/tomcat/webapps/identity.war")
+cpfile("$UPDATER/oxauth.war', 'dest_dir/opt/tomcat/webapps/oxauth.war")
+serviceinit("stop")
