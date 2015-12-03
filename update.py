@@ -30,9 +30,6 @@ def cpfile(src,dst):
   if os.path.exists(src) and os.path.exists(dst):
    shutil.copy2(src, dst)
 
-  if os.path.exists("/etc/init.d/gluu-server24"): 
-  elif os.path.exists("/etc/init.d/gluu-server"): 
-
 def serviceinit(startstop,initpath):
     p = subprocess.Popen(["service", initpath, startstop], stdout=subprocess.PIPE)
     output, err = p.communicate()
