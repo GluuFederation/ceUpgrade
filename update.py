@@ -23,6 +23,8 @@
 
 import os, subprocess, shutil, sys
 
+package_dir = "/var/cache/apt/archives/"
+
 def cpfile(src, dst):
   if os.path.exists(src) and os.path.exists(dst):
       shutil.copy2(src, dst)
@@ -38,27 +40,28 @@ def serviceinit(servicename, action):
     print output
 
 def check_ver():
-    initpath = None
     dest_dir = None
     service_name = None
     if os.path.exists("/etc/init.d/gluu-server24"):
-        initpath = "/etc/init.d/gluu-server24"
         dest_dir = "/opt/gluu-server24"
         service_name = "gluu-server24"
     elif os.path.exists("/etc/init.d/gluu-server"):
-        initpath = "/etc/init.d/gluu-server"
         dest_dir = "/opt/gluu-server"
         service_name = "gluu-server"
     else:
         print "Gluu Server not found. Exiting..."
         sys.exit(2)
-    return initpath, dest_dir, service_name
+    return dest_dir, service_name
 
-#NEED HELP WITH UPDATER VARIABLE
-initpath, dest_dir, service_name = check_ver()
+# MAIN LOOP
+dest_dir, service_name = check_ver()
 serviceinit(service_name, "stop")
-cpfile("%s/idp.war" % initpath, "%s/opt/idp/war/idp.war" % dest_dir)
-cpfile("%s/oxcas.war" % initpath, "%s/opt/dist/oxcas.war" % dest_dir)
-cpfile("%s/identity.war" % initpath, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
-cpfile("%s/oxauth.war" % initpath, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
+cpfile("%s/%s/idp.war" % (package_dir, service_name),
+       "%s/opt/idp/war/idp.war" % dest_dir)
+cpfile("%s/%s/oxcas.war" % (package_dir, service_name),
+       "%s/opt/dist/oxcas.war" % dest_dir)
+cpfile("%s/%s/identity.war" % (package_dir, service_name),
+       "%s/opt/tomcat/webapps/identity.war" % dest_dir)
+cpfile("%s/%s/oxauth.war" % (package_dir, service_name),
+       "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
 serviceinit(service_name, "start")
