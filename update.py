@@ -57,17 +57,18 @@ def check_ver():
 
 
 #src_dir = "%(gluu_path)s/%(up_path)s/%(ver_path)s/%(dist_path)s"%{"gluu_path": dest_dir, "up_path": updater_ver, "ver_path": "1", "dist_path": "dist"}
-
+#
 #src_dir = "{gluu_path}/{up_path}/{ver_path}/{dist_path}".format(gluu_path=dest_dir, up_path=updater_ver, ver_path="1", dist_path="dist")
-
-dictionary = {"gluu_path": dest_dir, 
-                "up_path": updater_ver, 
-               "ver_path": "1", 
-              "dist_path": "dist"}
-src_dir = "%(gluu_path)s/%(up_path)s/%(ver_path)s/%(dist_path)s" % dictionary
-
+#
+#dictionary = {"gluu_path": dest_dir, 
+#                "up_path": updater_ver, 
+#               "ver_path": "1", 
+#              "dist_path": "dist"}
+#src_dir = "%(gluu_path)s/%(up_path)s/%(ver_path)s/%(dist_path)s" % dictionary
+#
 
 dest_dir, service_name = check_ver()
+src_dir = "%(gluu_path)s/%(up_path)s/%(ver_path)s/%(dist_path)s"%{"gluu_path": dest_dir, "up_path": updater_ver, "ver_path": "1", "dist_path": "dist"}
 serviceinit(service_name, "stop")
 cpfile("%s/idp.war" % src_dir, "%s/opt/idp/war/idp.war" % dest_dir)
 cpfile("%s/oxcas.war" % src_dir, "%s/opt/dist/oxcas.war" % dest_dir)
