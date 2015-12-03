@@ -45,19 +45,24 @@ def check_ver():
     if os.path.exists("/etc/init.d/gluu-server24"):
         dest_dir = "/opt/gluu-server24"
         service_name = "gluu-server24"
+        updater_ver = "gluu-updater24"
     elif os.path.exists("/etc/init.d/gluu-server"):
         dest_dir = "/opt/gluu-server"
         service_name = "gluu-server"
+        updater_ver = "gluu-updater23"
     else:
         print "Gluu Server not found. Exiting..."
         sys.exit(2)
-    return dest_dir, service_name
+    return dest_dir, service_name, updater_ver
 
-# MAIN LOOP
+
+#src_dir = "%(gluu_path)s/%(up_path)s/%(ver_path)s/%(dist_path)s"%{"gluu_path": dest_dir, "up_path": updater_ver, "ver_path": "1", "dist_path": "dist"}
+src_dir = "{gluu_path}/{up_path}/{ver_path}/{dist_path}".format(gluu_path=dest_dir, up_path=updater_ver, ver_path="1", dist_path="dist")
+
 dest_dir, service_name = check_ver()
 serviceinit(service_name, "stop")
-cpfile("%s/%s/idp.war" % package_dir, "%s/opt/idp/war/idp.war" % dest_dir)
-cpfile("%s/%s/oxcas.war" % package_dir, "%s/opt/dist/oxcas.war" % dest_dir)
-cpfile("%s/%s/identity.war" % package_dir, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
-cpfile("%s/%s/oxauth.war" % package_dir, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
+cpfile("%s/idp.war" % src_dir, "%s/opt/idp/war/idp.war" % dest_dir)
+cpfile("%s/oxcas.war" % src_dir, "%s/opt/dist/oxcas.war" % dest_dir)
+cpfile("%s/identity.war" % src_dir, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
+cpfile("%s/oxauth.war" % src_dir, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
 serviceinit(service_name, "start")
