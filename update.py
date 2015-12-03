@@ -30,28 +30,31 @@ def cpfile(src,dst):
   if os.path.exists(src) and os.path.exists(dst):
    shutil.copy2(src, dst)
 
-def serviceinit(startstop):
   if os.path.exists("/etc/init.d/gluu-server24"): 
-    p = subprocess.Popen(["service", "gluu-server24", startstop], stdout=subprocess.PIPE)
-    output, err = p.communicate()
-    print "Stopping or starting gluu-server...\n", output
   elif os.path.exists("/etc/init.d/gluu-server"): 
-    p = subprocess.Popen(["service", "gluu-server", startstop], stdout=subprocess.PIPE)
+
+def serviceinit(startstop,initpath):
+    p = subprocess.Popen(["service", initpath, startstop], stdout=subprocess.PIPE)
     output, err = p.communicate()
-    print "Stopping or starting gluu-server...\n", output
+    print "Stopping or starting initfile...\n", output
 
-
-dest_dir_ls = os.listdir("/opt")
-dest_dir = ""
-
-for dir in dest_dir_ls:
-  if dir.index("gluu")>=0:
-    dest_dir = dir
+def check_ver():
+  if os.path.exists("/etc/init.d/gluu-server24"):
+    initpath = "/etc/init.d/gluu-server24"
+    dest_dir = "/opt/gluu-server24"
+    return initpath
+    return dest_dir
+  elif os.path.exists("/etc/init.d/gluu-server"): 
+    initpath = "/etc/init.d/gluu-server"
+    dest_dir = "/opt/gluu-server"
+    return initpath
+    return dest_dir
 
 #NEED HELP WITH UPDATER VARIABLE
-serviceinit("start")
+check_ver()
+serviceinit("start",initpath)
 cpfile("$UPDATER/idp.war", "dest_dir/opt/idp/war/idp.war")
 cpfile("$UPDATER/oxcas.war", "dest_dir/opt/dist/oxcas.war")
 cpfile("$UPDATER/identity.war", "dest_dir/opt/tomcat/webapps/identity.war")
 cpfile("$UPDATER/oxauth.war', 'dest_dir/opt/tomcat/webapps/oxauth.war")
-serviceinit("stop")
+serviceinit("stop",initpath)
