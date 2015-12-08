@@ -23,11 +23,13 @@
 
 import os, subprocess, shutil, sys
 
-package_dir = "/var/cache/apt/archives/"
-
 def cpfile(src, dst):
   if os.path.exists(src) and os.path.exists(dst):
       shutil.copy2(src, dst)
+
+def cpdir(src, dst):
+  if os.path.exists(src) and os.path.exists(dst):
+      shutil.copytree(src, dst)
 
 def serviceinit(servicename, action):
     cmd = ["service", servicename, action]
@@ -57,10 +59,12 @@ def check_ver():
     return dest_dir, service_name, updater_ver
 
 dest_dir, service_name, updater_ver = check_ver()
-src_dir = "%s/%s/1/dist" % (dest_dir, updater_ver)
+#src_dir = "%s/%s/1/dist" % (dest_dir, updater_ver)
+src_dir = "/opt/%s/1/dist" %updater_ver
 serviceinit(service_name, "stop")
 cpfile("%s/idp.war" % src_dir, "%s/opt/idp/war/idp.war" % dest_dir)
 cpfile("%s/oxcas.war" % src_dir, "%s/opt/dist/oxcas.war" % dest_dir)
 cpfile("%s/identity.war" % src_dir, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
 cpfile("%s/oxauth.war" % src_dir, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
+cptree("%s/community-edition-setup" % src_dir, "%s/opt/install/" % dest_dir)
 serviceinit(service_name, "start")
