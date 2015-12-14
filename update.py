@@ -41,33 +41,8 @@ def serviceinit(servicename, action):
         sys.exit(1)
     print output
 
-#def check_ver():
-#    dest_dir = None
-#    service_name = None
-#    updater_ver = None
-#    if os.path.exists("/etc/init.d/gluu-server24"):
-#        dest_dir = "/opt/gluu-server24"
-#        service_name = "gluu-server24"
-#        updater_ver = "gluu-updater24"
-#    elif os.path.exists("/etc/init.d/gluu-server"):
-#        dest_dir = "/opt/gluu-server"
-#        service_name = "gluu-server"
-#        updater_ver = "gluu-updater23"
-#    else:
-#        print "Gluu Server not found. Exiting..."
-#        sys.exit(2)
-#    return dest_dir, service_name, updater_ver
-#
-#dest_dir, service_name, updater_ver = check_ver()
-#src_dir = "%s/%s/1/dist" % (dest_dir, updater_ver)
-#src_dir = "/opt/%s/1/dist" %updater_ver
-#serviceinit(service_name, "stop")
-#cpfile("%s/idp.war" % src_dir, "%s/opt/idp/war/idp.war" % dest_dir)
-#cpfile("%s/oxcas.war" % src_dir, "%s/opt/dist/oxcas.war" % dest_dir)
-#cpfile("%s/identity.war" % src_dir, "%s/opt/tomcat/webapps/identity.war" % dest_dir)
-#cpfile("%s/oxauth.war" % src_dir, "%s/opt/tomcat/webapps/oxauth.war" % dest_dir)
-#cptree("%s/community-edition-setup" % src_dir, "%s/opt/install/" % dest_dir)
-#serviceinit(service_name, "start")
+def changeown(warfile):
+    shutil.chown(warfile, user=tomcat, group=tomcat)
 
 src_dir = "/opt/%s/1/dist" %updater_ver
 serviceinit("tomcat6", "stop")
@@ -76,4 +51,8 @@ cpfile("%s/oxcas.war" % src_dir, "/opt/dist/oxcas.war")
 cpfile("%s/identity.war" % src_dir, "/opt/tomcat/webapps/identity.war")
 cpfile("%s/oxauth.war" % src_dir, "/opt/tomcat/webapps/oxauth.war")
 cptree("%s/community-edition-setup" % src_dir, "/opt/install/")
+changeown("/opt/idp/war/idp.war")
+changeown("/opt/dist/oxcas.war")
+changeown("/opt/tomcat/webapps/identity.war")
+changeown("/opt/tomcat/webapps/oxauth.war")
 serviceinit("tomcat6", "start")
