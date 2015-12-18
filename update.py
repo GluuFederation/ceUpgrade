@@ -34,6 +34,7 @@ find = "/usr/bin/find"
 mkdir = "/bin/mkdir"
 unzip = "/usr/bin/unzip"
 chown = "/bin/chown"
+cp = "/bin/cp"
 
 idpFolder = "/opt/tomcat/webapps/idp"
 oxauthFolder = "/opt/tomcat/webapps/oxauth"
@@ -65,16 +66,17 @@ def backupCustomizations(war):
         if not os.path.isdir(modified_file):
             if not os.path.exists(original_file):
                 logIt("Found new file: %s" % modified_file)
-                copyFileToDir(modified_file, bu_folder)
+                copyFileWithParentDir(modified_file, bu_folder)
             else:
                 modified_hash = hash_file(modified_file)
                 original_hash = hash_file(original_file)
                 if not modified_hash == original_hash:
                     logIt("Found changed file: %s" % modified_file)
-                    copyFileToDir(modified_file, bu_folder)
+                    copyFileWithParentDir(modified_file, bu_folder)
     shutil.rmtree(original_dir)
 
-def copyFileToDir(fn, dir):
+# This copy method maintains the parent folder.
+def copyFileWithParentDir(fn, dir):
     parent_Dir = os.path.split(fn)[0]
     bu_dir = "%s/%s" % (bkp_folder, parent_Dir)
     if not os.path.exists(bu_dir):
@@ -124,13 +126,11 @@ def walk_function(a, dir, files):
             except:
                 logIt("Error copying %s" % targetFn, True)
 
-def copyFiles(dir):
+def restoreCustomizations(dir):
     os.path.walk (dir, walk_function, None)
 
 def cpfile(src, dst):
-  if os.path.exists(src) and os.path.exists(dst):
-      shutil.copy2(src, dst)
-      logIt("Copied %s to %s" % (src, dst))
+    getOutput([cp, src, dst])
 
 def cpdir(src, dst):
   if os.path.exists(src) and os.path.exists(dst):
@@ -156,36 +156,33 @@ serviceinit("tomcat6", "stop")
 serviceinit("opendj", "stop")
 
 # Backup Changed Stuff
-backupCustomizations("idp.war")
 backupCustomizations("oxauth.war")
 backupCustomizations("identity.war")
-copyFileToDir("/opt/opendj/config/schema/101-ox.ldif", bkp_folder)
+cpfile("/opt/opendj/config/schema/101-ox.ldif", "%s/101-ox.ldif" % bkp_folder)
 
-# Copy new war files
+# Copy distribution
 cpfile("%s/idp.war" % src_dir, "/opt/idp/war/idp.war")
-cpfile("%s/oxcas.war" % src_dir, "/opt/dist/oxcas.war")
+cpfile("%s/oxauth.war" % src_dir, "/opt/tomcat/webapps/oxauth.war")
 cpfile("%s/identity.war" % src_dir, "/opt/tomcat/webapps/identity.war")
+cpfile("%s/101-ox.ldif" % src_dir, "/opt/opendj/config/schema/101-ox.ldif")
 
 # Remove expanded folders
-shutil.rmtree(idpFolder)
 shutil.rmtree(oxauthFolder)
 shutil.rmtree(identityFolder)
 
 # Unzip Files
-os.mkdir(idpFolder)
 os.mkdir(oxauthFolder)
 os.mkdir(identityFolder)
-getOutput([unzip, "/opt/tomcat/webapps/idp.war", '-d', idpFolder])
 getOutput([unzip, "/opt/tomcat/webapps/oxauth.war", '-d', oxauthFolder])
 getOutput([unzip, "/opt/tomcat/webapps/identity.war", '-d', identityFolder])
 
 # Restore customized files
-copyFiles("%s/idp" % bkp_folder)
-copyFiles("%s/oxauth" % bkp_folder)
-copyFiles("%s/identity" % bkp_folder)
+restoreCustomizations("%s/oxauth" % bkp_folder)
+restoreCustomizations("%s/identity" % bkp_folder)
 
 # Change permissions
 changeown("/opt/tomcat", "tomcat")
+changeown("/opt/idp", "tomcat")
 changeown("/opt/opendj", "ldap")
 
 # Start services
