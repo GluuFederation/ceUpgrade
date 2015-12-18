@@ -114,7 +114,7 @@ def getOutput(args, return_list=False):
 def walk_function(a, dir, files):
     for file in files:
         fn = "%s/%s" % (dir, file)
-        targetFn = fn.replace(bkp_folder, "/opt/tomcat")
+        targetFn = fn.replace(bkp_folder, "/opt/tomcat/webapps")
         if os.path.isdir(fn):
             if not os.path.exists(targetFn):
                 os.mkdir(targetFn)
