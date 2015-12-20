@@ -24,9 +24,11 @@
 import os, shutil, sys, time, hashlib, traceback
 
 version = "2.4.1"
-src_dir = "/var/lib/gluu-update/%s/dist" % version
-bkp_folder = "/var/lib/gluu-update/%s/bkp" % version
-log_folder = "/var/lib/gluu-update/%s/log" % version
+#base_dir = "."
+base_dir = "/var/lib/gluu-update/$s" % version
+src_dir = "%s/dist" % base_dir
+bkp_folder = "%s/bkp" % base_dir
+log_folder = "%s/log" % base_dir
 log = "%s/update.log" % log_folder
 logError = "%s/update.error" % log_folder
 
@@ -186,5 +188,6 @@ changeown("/opt/idp", "tomcat")
 changeown("/opt/opendj", "ldap")
 
 # Start services
-serviceinit("tomcat6", "start")
+serviceinit("tomcat", "start")
 serviceinit("opendj", "start")
+
