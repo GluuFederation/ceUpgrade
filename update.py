@@ -38,9 +38,10 @@ unzip = "/usr/bin/unzip"
 chown = "/bin/chown"
 cp = "/bin/cp"
 
-idpFolder = "/opt/tomcat/webapps/idp"
-oxauthFolder = "/opt/tomcat/webapps/oxauth"
-identityFolder = "/opt/tomcat/webapps/identity"
+tomcatFolder = "/opt/tomcat"
+idpFolder = "%s/webapps/idp" % tomcatFolder
+oxauthFolder = "%s/webapps/oxauth" % tomcatFolder
+identityFolder = "%s/webapps/identity" % tomcatFolder
 setupFolder = "/install/community-edition-setup"
 
 def logIt(msg, errorLog=False):
@@ -164,6 +165,37 @@ def changeown(path, owner):
     getOutput([chown, "-R", "%s:%s" % (owner, owner), path])
     logIt("Changing ownership for folder %s to owner %s" % (path, owner))
 
+def copyRenderedTemplate(srcPath, dstPath, substituteDict):
+    try:
+        logIt("Rendering template %s using dictionary %s" % (srcPath, substituteDict))
+        f = open(srcPath)
+        try:
+            template_text = f.read()
+        finally:
+            f.close()
+
+        newFn = open(dstPath, 'w+')
+        try:
+            newFn.write(template_text % substituteDict)
+        finally:
+            newFn.close()
+    except:
+        logIt("Error writing template %s to %s" % (srcPath, dstPath), True)
+        logIt(traceback.format_exc(), True)
+
+def generate_random(len):
+    return os.urandom(len).encode('hex') 
+
+def applyOxAuthSessionStatePath():
+    oxAuthContextXmlFileName = "oxauth.xml"
+
+    oxauth_jsf_salt = generate_random(16)
+    substituteDict = {"oxauth_jsf_salt" : oxauth_jsf_salt }
+
+    oxAuthContextXmlFileSrc = "%/templates/%s" % (setupFolder, oxAuthContextXmlFileName)
+    oxAuthContextXmlFileDest = "%/conf/Catalina/localhost/%s" % (tomcatFolder, oxAuthContextXmlFileName)
+    copyRenderedTemplate(oxAuthContextXmlFileSrc, oxAuthContextXmlFileDest, substituteDict)
+
 # Create log and backup folders
 if not os.path.exists(bkp_folder):
     os.mkdir(bkp_folder)
@@ -201,6 +233,9 @@ restoreCustomizations("%s/identity" % bkp_folder)
 
 # Backup current setup and install new setup script 
 updateSetup()
+
+# Backup current setup and install new setup script 
+applyOxAuthSessionStatePath()
 
 # Change permissions
 changeown("/opt/tomcat", "tomcat")
