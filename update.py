@@ -41,6 +41,7 @@ cp = "/bin/cp"
 idpFolder = "/opt/tomcat/webapps/idp"
 oxauthFolder = "/opt/tomcat/webapps/oxauth"
 identityFolder = "/opt/tomcat/webapps/identity"
+setupFolder = "/install/community-edition-setup"
 
 def logIt(msg, errorLog=False):
     if errorLog:
@@ -131,6 +132,18 @@ def walk_function(a, dir, files):
 def restoreCustomizations(dir):
     os.path.walk (dir, walk_function, None)
 
+def updateSetup():
+    setupDir = os.path.split(setupFolder)[-1]
+    setup_bk_dir = "%s/%s" % (bkp_folder, setupDir)
+    
+    # Backup current setup
+    cpdir(setupFolder, setup_bk_dir)
+    rmdir(setupFolder)
+    
+    # Install new setup
+    new_setup_path = "%s/%s" % (src_dir, setupDir)
+    cpdir(new_setup_path, setupFolder)
+
 def cpfile(src, dst):
     getOutput([cp, src, dst])
 
@@ -138,6 +151,10 @@ def cpdir(src, dst):
   if os.path.exists(src) and os.path.exists(dst):
       shutil.copytree(src, dst)
       logIt("Backed up folder %s to %s" % (src, dst))
+
+def rmdir(src):
+    shutil.rmtree(src)
+    logIt("Removed folder %s", src)
 
 def serviceinit(servicename, action):
     cmd = ["service", servicename, action]
@@ -181,6 +198,9 @@ getOutput([unzip, "/opt/tomcat/webapps/identity.war", '-d', identityFolder])
 # Restore customized files
 restoreCustomizations("%s/oxauth" % bkp_folder)
 restoreCustomizations("%s/identity" % bkp_folder)
+
+# Backup current setup and install new setup script 
+updateSetup()
 
 # Change permissions
 changeown("/opt/tomcat", "tomcat")
