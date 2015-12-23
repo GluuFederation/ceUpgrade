@@ -1,0 +1,11 @@
+Package: gluu-updater24
+Version: 1-2
+Architecture: all
+Maintainer: Gluu Developers <support@gluu.org>
+Installed-Size: 232217
+Depends: gluu-server24
+Section: java
+Priority: optional
+Homepage: http://www.gluu.org
+Description: Gluu Server Community Edition
+Original-Maintainer: Adrian Alves <support@gluu.org>

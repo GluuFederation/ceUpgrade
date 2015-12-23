@@ -1,0 +1,13 @@
+Source: gluu-updater24
+Section: java
+Priority: optional
+Maintainer: Gluu Developers <support@gluu.org>
+XSBC-Original-Maintainer: Adrian Alves <support@gluu.org>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: http://www.gluu.org
+
+Package: gluu-updater24
+Architecture: all
+Depends: gluu-server24
+Description: Gluu Server Community Edition

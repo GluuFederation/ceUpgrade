@@ -122,6 +122,7 @@ class Setup(object):
         self.oxauthClient_pw = None
         self.oxauthClient_encoded_pw = None
         self.encode_salt = None
+        self.oxauth_jsf_salt = None
 
         self.outputFolder = '%s/output' % self.install_dir
         self.templateFolder = '%s/templates' % self.install_dir
@@ -183,12 +184,13 @@ class Setup(object):
         # reflect final path if the file must be copied after its rendered.
         self.oxauth_ldap_properties = '%s/conf/oxauth-ldap.properties' % self.tomcatHome
         self.oxauth_config_json = '%s/oxauth-config.json' % self.outputFolder
+        self.oxauth_context_xml = '%s/conf/Catalina/localhost/oxauth.xml' % self.outputFolder
         self.oxtrust_config_json = '%s/oxtrust-config.json' % self.outputFolder
         self.oxtrust_cache_refresh_json = '%s/oxtrust-cache-refresh.json' % self.outputFolder
+        self.oxtrust_import_person_json = '%s/oxtrust-import-person.json' % self.outputFolder
         self.oxidp_config_json = '%s/oxidp-config.json' % self.outputFolder
         self.tomcat_server_xml = '%s/conf/server.xml' % self.tomcatHome
         self.oxtrust_ldap_properties = '%s/conf/oxtrust-ldap.properties' % self.tomcatHome
-        self.oxtrust_import_person_properties = '%s/conf/gluuImportPerson.properties' % self.tomcatHome
         self.oxidp_ldap_properties = '%s/conf/oxidp-ldap.properties' % self.tomcatHome
         self.tomcat_gluuTomcatWrapper = '%s/conf/gluuTomcatWrapper.conf' % self.tomcatHome
         self.oxauth_static_conf_json = '%s/oxauth-static-conf.json' % self.outputFolder
@@ -225,6 +227,7 @@ class Setup(object):
         self.oxauth_openid_key_base64 = None
         self.oxtrust_config_base64 = None
         self.oxtrust_cache_refresh_base64 = None
+        self.oxtrust_import_person_base64 = None
         self.oxidp_config_base64 = None
 
         # oxTrust SCIM configuration
@@ -252,12 +255,13 @@ class Setup(object):
 
         self.ce_templates = {self.oxauth_ldap_properties: True,
                      self.oxauth_config_json: False,
+                     self.oxauth_context_xml: True,
                      self.oxtrust_config_json: False,
                      self.oxtrust_cache_refresh_json: False,
+                     self.oxtrust_import_person_json: False,
                      self.oxidp_config_json: False,
                      self.tomcat_server_xml: True,
                      self.oxtrust_ldap_properties: True,
-                     self.oxtrust_import_person_properties: True,
                      self.oxidp_ldap_properties: True,
                      self.tomcat_gluuTomcatWrapper: True,
                      self.oxauth_static_conf_json: False,
@@ -285,23 +289,30 @@ class Setup(object):
                      }
 
     def __repr__(self):
-        return 'hostname'.ljust(30) + self.hostname.rjust(35) + "\n" \
-            + 'orgName'.ljust(30) + self.orgName.rjust(35) + "\n" \
-            + 'os'.ljust(30) + self.os_type.rjust(35) + "\n" \
-            + 'city'.ljust(30) + self.city.rjust(35) + "\n" \
-            + 'state'.ljust(30) + self.state.rjust(35) + "\n" \
-            + 'countryCode'.ljust(30) + self.countryCode.rjust(35) + "\n" \
-            + 'support email'.ljust(30) + self.admin_email.rjust(35) + "\n" \
-            + 'tomcat max ram'.ljust(30) + self.tomcat_max_ram.rjust(35) + "\n" \
-            + 'Admin Pass'.ljust(30) + self.ldapPass.rjust(35) + "\n" \
-            + 'Install oxAuth'.ljust(30) + `self.components['oxauth']['enabled']`.rjust(35) + "\n" \
-            + 'Install oxTrust'.ljust(30) + `self.components['oxtrust']['enabled']`.rjust(35) + "\n" \
-            + 'Install LDAP'.ljust(30) + `self.components['ldap']['enabled']`.rjust(35) + "\n" \
-            + 'Install Apache 2 web server'.ljust(30) + `self.components['httpd']['enabled']`.rjust(35) + "\n" \
-            + 'Install Shibboleth 2 SAML IDP'.ljust(30) + `self.components['saml']['enabled']`.rjust(35) + "\n" \
-            + 'Install Asimba SAML Proxy'.ljust(30) + `self.components['asimba']['enabled']`.rjust(35) + "\n" \
-            + 'Install CAS'.ljust(30) + `self.components['cas']['enabled']`.rjust(35) + "\n" \
-            + 'Install oxAuth RP'.ljust(30) + `self.components['oxauth_rp']['enabled']`.rjust(35) + "\n"
+        try:
+            return 'hostname'.ljust(30) + self.hostname.rjust(35) + "\n" \
+                + 'orgName'.ljust(30) + self.orgName.rjust(35) + "\n" \
+                + 'os'.ljust(30) + self.os_type.rjust(35) + "\n" \
+                + 'city'.ljust(30) + self.city.rjust(35) + "\n" \
+                + 'state'.ljust(30) + self.state.rjust(35) + "\n" \
+                + 'countryCode'.ljust(30) + self.countryCode.rjust(35) + "\n" \
+                + 'support email'.ljust(30) + self.admin_email.rjust(35) + "\n" \
+                + 'tomcat max ram'.ljust(30) + self.tomcat_max_ram.rjust(35) + "\n" \
+                + 'Admin Pass'.ljust(30) + self.ldapPass.rjust(35) + "\n" \
+                + 'Install oxAuth'.ljust(30) + `self.components['oxauth']['enabled']`.rjust(35) + "\n" \
+                + 'Install oxTrust'.ljust(30) + `self.components['oxtrust']['enabled']`.rjust(35) + "\n" \
+                + 'Install LDAP'.ljust(30) + `self.components['ldap']['enabled']`.rjust(35) + "\n" \
+                + 'Install Apache 2 web server'.ljust(30) + `self.components['httpd']['enabled']`.rjust(35) + "\n" \
+                + 'Install Shibboleth 2 SAML IDP'.ljust(30) + `self.components['saml']['enabled']`.rjust(35) + "\n" \
+                + 'Install Asimba SAML Proxy'.ljust(30) + `self.components['asimba']['enabled']`.rjust(35) + "\n" \
+                + 'Install CAS'.ljust(30) + `self.components['cas']['enabled']`.rjust(35) + "\n" \
+                + 'Install oxAuth RP'.ljust(30) + `self.components['oxauth_rp']['enabled']`.rjust(35) + "\n"
+        except:
+            s = ""
+            for key in self.__dict__.keys():
+                val = self.__dict__[key]
+                s = s + "%s\n%s\n%s\n\n" % (key, "-" * len(key), val)
+            return s
 
     def add_ldap_schema(self):
         try:
@@ -339,23 +350,23 @@ class Setup(object):
             else:
                 print 'The hostname has to be at least three domain components. Try again\n'
         while not self.ip:
-            testIP = raw_input('IP address of the server %s : ' % self.hostname).strip()
+            testIP = raw_input('IP address : ').strip()
             if self.isIP(testIP):
                 self.ip = testIP
             else:
                 print 'ERROR: The IP Address is invalid. Try again\n'
         while not self.orgName:
-            self.orgName = raw_input('Organization Name (for ceritificate)').strip()
+            self.orgName = raw_input('Organization Name: ').strip()
         while not self.countryCode:
-            testCode = raw_input('2 Character Country Code (for ceritificate)').strip()
+            testCode = raw_input('2 Character Country Code: ').strip()
             if len(testCode) == 2:
                 self.countryCode = testCode
             else:
                 print 'Country code should only be two characters. Try again\n'
         while not self.city:
-            self.city = raw_input('City (for certificate)').strip()
+            self.city = raw_input('City: ').strip()
         while not self.state:
-            self.state = raw_input('State or Province (for certificate)').strip()
+            self.state = raw_input('State or Province: ').strip()
         if not self.admin_email:
             tld = None
             try:
@@ -433,7 +444,9 @@ class Setup(object):
                               ['set-attribute-syntax-prop', '--syntax-name', '"Directory String"',   '--set', 'allow-zero-length-values:true'],
                               ['set-password-policy-prop', '--policy-name', '"Default Password Policy"', '--set', 'allow-pre-encoded-passwords:true'],
                               ['set-log-publisher-prop', '--publisher-name', '"File-Based Audit Logger"', '--set', 'enabled:true'],
-                              ['create-backend', '--backend-name', 'site', '--set', 'base-dn:o=site', '--type local-db', '--set', 'enabled:true']]
+                              ['create-backend', '--backend-name', 'site', '--set', 'base-dn:o=site', '--type local-db', '--set', 'enabled:true'],
+                              ['set-global-configuration-prop', '--set', 'reject-unauthenticated-requests:true']
+                              ]
             for changes in config_changes:
                 dsconfigCmd = " ".join(['cd %s/bin ; ' % self.ldapBaseFolder,
                                         self.ldapDsconfigCommand,
@@ -1140,6 +1153,9 @@ class Setup(object):
             self.logIt(traceback.format_exc(), True)
             sys.exit()
 
+    def make_oxauth_salt(self):
+        self.oxauth_jsf_salt = os.urandom(16).encode('hex') 
+
     def promptForProperties(self):
         # IP address needed only for Apache2 and hosts file update
         if self.components['httpd']['enabled']:
@@ -1370,6 +1386,7 @@ class Setup(object):
 
         self.oxtrust_config_base64 = self.generate_base64_ldap_file(self.oxtrust_config_json);
         self.oxtrust_cache_refresh_base64 = self.generate_base64_ldap_file(self.oxtrust_cache_refresh_json)
+        self.oxtrust_import_person_base64 = self.generate_base64_ldap_file(self.oxtrust_import_person_json)
 
         self.oxidp_config_base64 = self.generate_base64_ldap_file(self.oxidp_config_json)
 
@@ -1641,6 +1658,7 @@ if __name__ == '__main__':
         try:
             installObject.makeFolders()
             installObject.make_salt()
+            installObject.make_oxauth_salt()
             installObject.downloadWarFiles()
             installObject.writeLdapPW()
             installObject.copy_scripts()
