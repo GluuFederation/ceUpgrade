@@ -25,7 +25,7 @@ import os, shutil, sys, time, hashlib, traceback
 
 version = "2.4.1"
 #base_dir = "."
-base_dir = "/var/lib/gluu-update/$s" % version
+base_dir = "/var/lib/gluu-update/%s" % version
 src_dir = "%s/dist" % base_dir
 bkp_folder = "%s/bkp" % base_dir
 log_folder = "%s/log" % base_dir
@@ -136,11 +136,11 @@ def restoreCustomizations(dir):
 def updateSetup():
     setupDir = os.path.split(setupFolder)[-1]
     setup_bk_dir = "%s/%s" % (bkp_folder, setupDir)
-    
+
     # Backup current setup
     cpdir(setupFolder, setup_bk_dir)
     rmdir(setupFolder)
-    
+
     # Install new setup
     new_setup_path = "%s/%s" % (src_dir, setupDir)
     cpdir(new_setup_path, setupFolder)
@@ -149,13 +149,18 @@ def cpfile(src, dst):
     getOutput([cp, src, dst])
 
 def cpdir(src, dst):
-  if os.path.exists(src) and os.path.exists(dst):
+  if os.path.exists(src):
       shutil.copytree(src, dst)
-      logIt("Backed up folder %s to %s" % (src, dst))
+      logIt("Copied folder %s to %s" % (src, dst))
 
 def rmdir(src):
-    shutil.rmtree(src)
-    logIt("Removed folder %s", src)
+    try:
+        if os.path.exists(src):
+            shutil.rmtree(src)
+            logIt("Removed folder %s" % src)
+    except:
+        logIt("Error removing folder %s" % src, True)
+        logIt(traceback.format_exc(), True)
 
 def serviceinit(servicename, action):
     cmd = ["service", servicename, action]
@@ -192,8 +197,8 @@ def applyOxAuthSessionStatePath():
     oxauth_jsf_salt = generate_random(16)
     substituteDict = {"oxauth_jsf_salt" : oxauth_jsf_salt }
 
-    oxAuthContextXmlFileSrc = "%/templates/%s" % (setupFolder, oxAuthContextXmlFileName)
-    oxAuthContextXmlFileDest = "%/conf/Catalina/localhost/%s" % (tomcatFolder, oxAuthContextXmlFileName)
+    oxAuthContextXmlFileSrc = "%s/templates/%s" % (setupFolder, oxAuthContextXmlFileName)
+    oxAuthContextXmlFileDest = "%s/conf/Catalina/localhost/%s" % (tomcatFolder, oxAuthContextXmlFileName)
     copyRenderedTemplate(oxAuthContextXmlFileSrc, oxAuthContextXmlFileDest, substituteDict)
 
 # Create log and backup folders
@@ -203,7 +208,7 @@ if not os.path.exists(log_folder):
     os.mkdir(log_folder)
 
 # Stop Gluu services
-serviceinit("tomcat6", "stop")
+serviceinit("tomcat", "stop")
 serviceinit("opendj", "stop")
 
 # Backup Changed Stuff
@@ -213,13 +218,14 @@ cpfile("/opt/opendj/config/schema/101-ox.ldif", "%s/101-ox.ldif" % bkp_folder)
 
 # Copy distribution
 cpfile("%s/idp.war" % src_dir, "/opt/idp/war/idp.war")
+cpfile("%s/oxcas.war" % src_dir, "/opt/dist/oxcas.war")
 cpfile("%s/oxauth.war" % src_dir, "/opt/tomcat/webapps/oxauth.war")
 cpfile("%s/identity.war" % src_dir, "/opt/tomcat/webapps/identity.war")
-cpfile("%s/101-ox.ldif" % src_dir, "/opt/opendj/config/schema/101-ox.ldif")
+cpfile("%s/community-edition-setup/static/opendj/101-ox.ldif" % src_dir, "/opt/opendj/config/schema/101-ox.ldif")
 
 # Remove expanded folders
-shutil.rmtree(oxauthFolder)
-shutil.rmtree(identityFolder)
+rmdir(oxauthFolder)
+rmdir(identityFolder)
 
 # Unzip Files
 os.mkdir(oxauthFolder)
@@ -243,6 +249,9 @@ changeown("/opt/idp", "tomcat")
 changeown("/opt/opendj", "ldap")
 
 # Start services
-serviceinit("tomcat", "start")
 serviceinit("opendj", "start")
 
+print "Waiting 10 seconds to allow OpenDJ start up"
+time.sleep(10)
+
+serviceinit("tomcat", "start")
