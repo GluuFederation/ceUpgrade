@@ -27,7 +27,7 @@ version = "2.4.1"
 #base_dir = "."
 base_dir = "/var/lib/gluu-update/%s" % version
 src_dir = "%s/dist" % base_dir
-bkp_folder = "%s/bkp" % base_dir
+bu_folder = "%s/bu" % base_dir
 log_folder = "%s/log" % base_dir
 log = "%s/update.log" % log_folder
 logError = "%s/update.error" % log_folder
@@ -57,7 +57,7 @@ def backupCustomizations(war):
     base = war.split(".")[0]
     modified_dir = "%s/webapps/%s" % (tomcatFolder, base)
     original_dir = "/tmp/%s" % base
-    bu_folder = "%s/%s" % (bkp_folder, base)
+    bu_folder = "%s/%s" % (bu_folder, base)
     if not os.path.exists(bu_folder):
         os.mkdir(bu_folder)
     if not os.path.exists(original_dir):
@@ -82,7 +82,7 @@ def backupCustomizations(war):
 # This copy method maintains the parent folder.
 def copyFileWithParentDir(fn, dir):
     parent_Dir = os.path.split(fn)[0]
-    bu_dir = "%s/%s" % (bkp_folder, parent_Dir[1:])
+    bu_dir = "%s/%s" % (bu_folder, parent_Dir[1:])
     if not os.path.exists(bu_dir):
         output = getOutput([mkdir, "-p", bu_dir])
     bu_fn = os.path.join(bu_dir, os.path.split(fn)[-1])
@@ -118,7 +118,7 @@ def getOutput(args, return_list=False):
 def walk_function(a, dir, files):
     for file in files:
         fn = "%s/%s" % (dir, file)
-        targetFn = fn.replace(bkp_folder, "%s/webapps" % tomcatFolder)
+        targetFn = fn.replace(bu_folder, "/")
         if os.path.isdir(fn):
             if not os.path.exists(targetFn):
                 os.mkdir(targetFn)
@@ -130,13 +130,14 @@ def walk_function(a, dir, files):
                 shutil.copyfile(fn, targetFn)
             except:
                 logIt("Walk: Error copying %s" % targetFn, True)
+                logIt(traceback.format_exc(), True)
 
 def restoreCustomizations(dir):
     os.path.walk (dir, walk_function, None)
 
 def updateSetup():
     setupDir = os.path.split(setupFolder)[-1]
-    setup_bk_dir = "%s/%s" % (bkp_folder, setupDir)
+    setup_bk_dir = "%s/%s" % (bu_folder, setupDir)
 
     # Backup current setup
     cpdir(setupFolder, setup_bk_dir)
@@ -203,8 +204,8 @@ def applyOxAuthSessionStatePath():
     copyRenderedTemplate(oxAuthContextXmlFileSrc, oxAuthContextXmlFileDest, substituteDict)
 
 # Create log and backup folders
-if not os.path.exists(bkp_folder):
-    os.mkdir(bkp_folder)
+if not os.path.exists(bu_folder):
+    os.mkdir(bu_folder)
 if not os.path.exists(log_folder):
     os.mkdir(log_folder)
 
@@ -215,7 +216,7 @@ serviceinit("opendj", "stop")
 # Backup Changed Stuff
 backupCustomizations("oxauth.war")
 backupCustomizations("identity.war")
-cpfile("/opt/opendj/config/schema/101-ox.ldif", "%s/101-ox.ldif" % bkp_folder)
+cpfile("/opt/opendj/config/schema/101-ox.ldif", "%s/101-ox.ldif" % bu_folder)
 
 # Copy distribution
 cpfile("%s/idp.war" % src_dir, "/opt/idp/war/idp.war")
@@ -235,8 +236,7 @@ getOutput([unzip, "%s/webapps/oxauth.war" % tomcatFolder, '-d', oxauthFolder])
 getOutput([unzip, "%s/webapps/identity.war" % tomcatFolder, '-d', identityFolder])
 
 # Restore customized files
-restoreCustomizations("%s/oxauth" % bkp_folder)
-restoreCustomizations("%s/identity" % bkp_folder)
+restoreCustomizations(bu_folder)
 
 # Backup current setup and install new setup script 
 updateSetup()
