@@ -57,9 +57,6 @@ def backupCustomizations(war):
     base = war.split(".")[0]
     modified_dir = "%s/webapps/%s" % (tomcatFolder, base)
     original_dir = "/tmp/%s" % base
-    bu_folder = "%s/%s" % (bu_folder, base)
-    if not os.path.exists(bu_folder):
-        os.mkdir(bu_folder)
     if not os.path.exists(original_dir):
         os.mkdir(original_dir)
     output = getOutput([unzip, "%s/webapps/%s" % (tomcatFolder, war), '-d', original_dir])
