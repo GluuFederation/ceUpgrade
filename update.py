@@ -82,7 +82,7 @@ def backupCustomizations(war):
 # This copy method maintains the parent folder.
 def copyFileWithParentDir(fn, dir):
     parent_Dir = os.path.split(fn)[0]
-    bu_dir = "%s/%s" % (bkp_folder, parent_Dir)
+    bu_dir = "%s/%s" % (bkp_folder, parent_Dir[1:])
     if not os.path.exists(bu_dir):
         output = getOutput([mkdir, "-p", bu_dir])
     bu_fn = os.path.join(bu_dir, os.path.split(fn)[-1])
@@ -122,13 +122,14 @@ def walk_function(a, dir, files):
         if os.path.isdir(fn):
             if not os.path.exists(targetFn):
                 os.mkdir(targetFn)
+                logIt("Walk: Creating Folder %s" % targetFn)
         else:
             # It's a file...
             try:
-                logIt("copying %s" % targetFn)
+                logIt("Walk: Copying %s" % targetFn)
                 shutil.copyfile(fn, targetFn)
             except:
-                logIt("Error copying %s" % targetFn, True)
+                logIt("Walk: Error copying %s" % targetFn, True)
 
 def restoreCustomizations(dir):
     os.path.walk (dir, walk_function, None)
