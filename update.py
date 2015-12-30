@@ -38,7 +38,7 @@ unzip = "/usr/bin/unzip"
 chown = "/bin/chown"
 cp = "/bin/cp"
 
-tomcatFolder = "/opt/tomcat"
+tomcatFolder = "/opt/apache-tomcat-7.0.55"
 idpFolder = "%s/webapps/idp" % tomcatFolder
 oxauthFolder = "%s/webapps/oxauth" % tomcatFolder
 identityFolder = "%s/webapps/identity" % tomcatFolder
@@ -55,14 +55,14 @@ def logIt(msg, errorLog=False):
 
 def backupCustomizations(war):
     base = war.split(".")[0]
-    modified_dir = "/opt/tomcat/webapps/%s" % base
+    modified_dir = "%s/webapps/%s" % (tomcatFolder, base)
     original_dir = "/tmp/%s" % base
     bu_folder = "%s/%s" % (bkp_folder, base)
     if not os.path.exists(bu_folder):
         os.mkdir(bu_folder)
     if not os.path.exists(original_dir):
         os.mkdir(original_dir)
-    output = getOutput([unzip, "/opt/tomcat/webapps/%s" % war, '-d', original_dir])
+    output = getOutput([unzip, "%s/webapps/%s" % (tomcatFolder, war), '-d', original_dir])
     files = getOutput([find, modified_dir], True)
     for modified_file in files:
         modified_file = modified_file.strip()
@@ -118,7 +118,7 @@ def getOutput(args, return_list=False):
 def walk_function(a, dir, files):
     for file in files:
         fn = "%s/%s" % (dir, file)
-        targetFn = fn.replace(bkp_folder, "/opt/tomcat/webapps")
+        targetFn = fn.replace(bkp_folder, "%s/webapps" % tomcatFolder)
         if os.path.isdir(fn):
             if not os.path.exists(targetFn):
                 os.mkdir(targetFn)
@@ -219,8 +219,8 @@ cpfile("/opt/opendj/config/schema/101-ox.ldif", "%s/101-ox.ldif" % bkp_folder)
 # Copy distribution
 cpfile("%s/idp.war" % src_dir, "/opt/idp/war/idp.war")
 cpfile("%s/oxcas.war" % src_dir, "/opt/dist/oxcas.war")
-cpfile("%s/oxauth.war" % src_dir, "/opt/tomcat/webapps/oxauth.war")
-cpfile("%s/identity.war" % src_dir, "/opt/tomcat/webapps/identity.war")
+cpfile("%s/oxauth.war" % src_dir, "%s/webapps/oxauth.war" % tomcatFolder)
+cpfile("%s/identity.war" % src_dir, "%s/webapps/identity.war" % tomcatFolder)
 cpfile("%s/community-edition-setup/static/opendj/101-ox.ldif" % src_dir, "/opt/opendj/config/schema/101-ox.ldif")
 
 # Remove expanded folders
@@ -230,8 +230,8 @@ rmdir(identityFolder)
 # Unzip Files
 os.mkdir(oxauthFolder)
 os.mkdir(identityFolder)
-getOutput([unzip, "/opt/tomcat/webapps/oxauth.war", '-d', oxauthFolder])
-getOutput([unzip, "/opt/tomcat/webapps/identity.war", '-d', identityFolder])
+getOutput([unzip, "%s/webapps/oxauth.war" % tomcatFolder, '-d', oxauthFolder])
+getOutput([unzip, "%s/webapps/identity.war" % tomcatFolder, '-d', identityFolder])
 
 # Restore customized files
 restoreCustomizations("%s/oxauth" % bkp_folder)
@@ -244,7 +244,7 @@ updateSetup()
 applyOxAuthSessionStatePath()
 
 # Change permissions
-changeown("/opt/tomcat", "tomcat")
+changeown(tomcatFolder, "tomcat")
 changeown("/opt/idp", "tomcat")
 changeown("/opt/opendj", "ldap")
 
