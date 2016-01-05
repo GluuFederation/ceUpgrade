@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+/usr/sbin/chroot /opt/gluu-server24 /bin/su - root -c '/var/lib/gluu-update/2.4.1/bin/update.py'
