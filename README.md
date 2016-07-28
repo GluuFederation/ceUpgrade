@@ -1,2 +1,2 @@
 # ceUpgrade
-Scripts needed to build CE upgrade
+Scripts needed for CE upgrade
